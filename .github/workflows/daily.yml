@@ -1,0 +1,41 @@
+
+name: Daily AI Content Generator
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '37 13 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get repository
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate educational content
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python main.py
+
+      - name: Save generated content
+        run: |
+          git config user.name "YouTube AI Bot"
+          git config user.email "actions@github.com"
+          git add output/ database/
+          git diff --cached --quiet || git commit -m "Generate daily educational content"
+          git push
+
+  
